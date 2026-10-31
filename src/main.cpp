@@ -2351,6 +2351,15 @@ int main(int argc, char *argv[])
         // initialise the game slots of all players and the AchievementsManager
         // to initialise the AchievementsStatus, so it is done only now.
         PlayerManager::get()->initRemainingData();
+#ifdef __EMSCRIPTEN__
+        if (PlayerManager::get()->getNumPlayers() == 0)
+        {
+            PlayerProfile* player = PlayerManager::get()->addNewPlayer(L"Pappnase");
+            player->incrementUseFrequency();
+            PlayerManager::get()->setCurrentPlayer(player);
+            PlayerManager::get()->save();
+        }
+#endif
 
         GUIEngine::addLoadingIcon( irr_driver->getTexture(FileManager::GUI_ICON,
                                                           "gui_lock.png"  ) );

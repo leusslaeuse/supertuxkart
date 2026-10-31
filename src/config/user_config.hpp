@@ -1314,11 +1314,19 @@ namespace UserConfigParams
 
     // ---- Internet related
 
+#ifdef __EMSCRIPTEN__
+    PARAM_PREFIX IntUserConfigParam        m_internet_status
+            PARAM_DEFAULT(  IntUserConfigParam(2, "enable_internet",
+                                               "Status of internet: 0 user "
+                                               "wasn't asked, 1: allowed, 2: "
+                                               "not allowed") );
+#else
     PARAM_PREFIX IntUserConfigParam        m_internet_status
             PARAM_DEFAULT(  IntUserConfigParam(0, "enable_internet",
                                                "Status of internet: 0 user "
                                                "wasn't asked, 1: allowed, 2: "
                                                "not allowed") );
+#endif
 
     PARAM_PREFIX GroupUserConfigParam       m_hw_report_group
             PARAM_DEFAULT( GroupUserConfigParam("HWReport",

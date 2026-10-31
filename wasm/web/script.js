@@ -7,12 +7,10 @@ let store_name = "stk_store";
 let idbfs_mount = null;
 let data_version = 1;
 
-let start_button = document.getElementById("start_button");
 let status_text = document.getElementById("status_text");
 let info_container = document.getElementById("info_container");
-let quality_select = document.getElementById("quality_select");
 
-let syncing_fs = false;
+let fs_sync = Promise.resolve();
 let config = {};
 
 function load_db() {
@@ -110,6 +108,7 @@ async function download_chunks(url) {
 
   status_text.textContent = `Downloading manifest for ${filename}...`;
   let r1 = await fetch(url + ".manifest");
+  if (!r1.ok) throw new Error(`Could not download ${filename} manifest: HTTP ${r1.status}`);
   let manifest = (await r1.text()).split("\n");
   let size = parseInt(manifest.shift());
   manifest.pop();
@@ -126,6 +125,7 @@ async function download_chunks(url) {
     status_text.textContent = `Downloading ${filename}... (chunk ${current_chunk}/${chunk_count}, ${mb_progress}/${mb_total}MiB)`;
 
     let r2 = await fetch(base_url + "/" + chunk);
+    if (!r2.ok) throw new Error(`Could not download ${chunk}: HTTP ${r2.status}`);
     let buffer = await r2.arrayBuffer();
     let chunk_array = new Uint8Array(buffer);
     array.set(chunk_array, offset);
@@ -165,6 +165,9 @@ async function extract_tar(url, fs_path, use_cache = false) {
       }
       catch {}
     }
+    else if (file.type === "1") {
+      FS.writeFile(out_path, FS.readFile(fs_path + file.linkname.substring(1)));
+    }
     else {
       let array = new Uint8Array(file.buffer);
       FS.writeFile(out_path, array);
@@ -180,8 +183,7 @@ async function load_data() {
     await write_db("/version", data_version);
   }
 
-  let quality = quality_select.value;
-  let data_url = `/game/data_${quality}.tar.gz`;
+  let data_url = "/game/data_high.tar.gz";
   await extract_tar(data_url, "/data", true);
 }
 
@@ -191,15 +193,13 @@ async function load_idbfs() {
 }
 
 function sync_idbfs(populate = false) {
-  if (syncing_fs) return;
-  syncing_fs = true;
-  return new Promise((resolve, reject) => {
+  fs_sync = fs_sync.then(() => new Promise((resolve, reject) => {
     idbfs_mount.type.syncfs(idbfs_mount, populate, (err) => {
-      syncing_fs = false;
       if (err) reject(err);
       else resolve();
     });
-  })
+  }));
+  return fs_sync;
 }
 
 function wait_for_frame() {
@@ -228,23 +228,20 @@ async function main() {
     set_websocket_url(config.ws_proxy);
   }
 
-  start_button.onclick = start_game;
-  start_button.disabled = false;
-  status_text.innerText = "";
+  await start_game();
 }
 
 async function start_game() {
   status_text.textContent = "Loading game files...";
-  start_button.disabled = true;
   await load_data();
   await wait_for_frame();
   status_text.textContent = "Launching game...";
 
   await wait_for_frame();
   run();
+  await sync_idbfs();
   info_container.style.zIndex = 0;
   info_container.style.display = "none";
-  sync_idbfs();
 
   console.warn("Warning: Opening devtools may harm the game's performance.");
 }
@@ -256,7 +253,10 @@ globalThis.load_idbfs = load_idbfs;
 
 let poll_runtime_interval = setInterval(() => {
   if (globalThis.ready) {
-    main();
     clearInterval(poll_runtime_interval);
+    main().catch((error) => {
+      status_text.textContent = `Unable to load SuperTuxKart. ${error.message}. Reload the page to try again.`;
+      console.error(error);
+    });
   }
 }, 100);
