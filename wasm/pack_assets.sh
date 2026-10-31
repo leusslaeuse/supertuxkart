@@ -9,8 +9,6 @@ WEB_DIR="$BASE_DIR/web"
 ASSETS_DIR="$(realpath "$1")"
 ASSETS_SCRIPT="$SRC_DIR/android/generate_assets.sh"
 
-LOW_QUALITY_DIR="$WEB_DIR/game/data_low"
-MEDIUM_QUALITY_DIR="$WEB_DIR/game/data_mid"
 HIGH_QUALITY_DIR="$WEB_DIR/game/data_high"
 
 create_manifest() {
@@ -45,7 +43,6 @@ generate_dir() {
   local output_path="$2"
   local texture_size="$3"
   ASSETS_PATHS="$ASSETS_DIR" OUTPUT_PATH="$data_dir" TEXTURE_SIZE="$texture_size" $ASSETS_SCRIPT
-  (cd $data_dir/data && ./optimize_data.sh)
   pack_dir "$data_dir/data" "$output_path"
 }
 
@@ -54,6 +51,4 @@ if [ ! "$ASSETS_DIR" ]; then
   exit 1
 fi
 
-generate_dir "$LOW_QUALITY_DIR" "$WEB_DIR/game/data_low.tar.gz" 256
-generate_dir "$MEDIUM_QUALITY_DIR" "$WEB_DIR/game/data_mid.tar.gz" 512
 generate_dir "$HIGH_QUALITY_DIR" "$WEB_DIR/game/data_high.tar.gz" 1024

@@ -3,7 +3,7 @@
 set -x
 set -e
 
-CORE_COUNT="$(nproc --all)"
+CORE_COUNT="${NIX_BUILD_CORES:-$(nproc --all)}"
 BASE_DIR="$(realpath "$(dirname "$0")")"
 BUILD_DIR="$BASE_DIR/build"
 EMSDK_DIR="$BASE_DIR/emsdk"
@@ -11,7 +11,9 @@ PREFIX="$BASE_DIR/prefix"
 INCLUDE="$PREFIX/include"
 LIB="$PREFIX/lib"
 
-source $EMSDK_DIR/emsdk_env.sh
+if [ -f "$EMSDK_DIR/emsdk_env.sh" ]; then
+  source "$EMSDK_DIR/emsdk_env.sh"
+fi
 export PKG_CONFIG_PATH="$LIB/pkgconfig"
 export CFLAGS="-fwasm-exceptions -sSUPPORT_LONGJMP=wasm -pthread"
 export CPPFLAGS="-fwasm-exceptions -sSUPPORT_LONGJMP=wasm -pthread"

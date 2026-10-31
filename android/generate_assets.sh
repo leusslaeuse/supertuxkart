@@ -230,6 +230,7 @@ done
 
 # Decrease assets quality in order to save some disk space and RAM
 echo "Decrease assets quality"
+chmod -R u+w "$OUTPUT_PATH"
 
 convert_image()
 {

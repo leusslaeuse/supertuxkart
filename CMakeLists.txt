@@ -59,8 +59,9 @@ if(IOS)
 endif()
 
 if(EMSCRIPTEN)
-    #note: cmake fails the first few times you run it then works fine without changing anything
-    #i have no idea why this happens
+    # Keep dependency paths when find_package is called again in subdirectories.
+    cmake_policy(SET CMP0102 NEW)
+    cmake_policy(SET CMP0077 NEW)
 
     set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/wasm/prefix/")
 
@@ -87,8 +88,6 @@ if(EMSCRIPTEN)
     set(OGGVORBIS_OGG_LIBRARY "${CMAKE_SOURCE_DIR}/wasm/prefix/lib/libogg.a")
     set(OGGVORBIS_VORBISFILE_LIBRARY "${CMAKE_SOURCE_DIR}/wasm/prefix/lib/libvorbisfile.a")
     set(OGGVORBIS_VORBIS_LIBRARY "${CMAKE_SOURCE_DIR}/wasm/prefix/lib/libvorbis.a")
-
-    set(PTHREAD_LIBRARY "${CMAKE_SOURCE_DIR}/wasm/emsdk/upstream")
 
     set(USE_WIIUSE 0)
     set(USE_DNS_C 1)
@@ -633,7 +632,7 @@ if(APPLE AND NOT IOS)
             COMMAND ln -f -s ${PROJECT_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/bin/supertuxkart.app/Contents/Resources)
     endif()
 else()
-    if (NOT WIN32)
+    if (NOT WIN32 AND NOT EMSCRIPTEN)
         find_library(PTHREAD_LIBRARY NAMES pthread ${PTHREAD_NAMES} PATHS ${PROJECT_SOURCE_DIR}/${DEPENDENCIES}/lib)
         mark_as_advanced(PTHREAD_LIBRARY)
     endif()
@@ -673,7 +672,7 @@ else()
     else()
         add_executable(supertuxkart ${STK_SOURCES} ${STK_RESOURCES} ${STK_HEADERS})
     endif()
-    if (NOT WIN32)
+    if (NOT WIN32 AND NOT EMSCRIPTEN)
         target_link_libraries(supertuxkart ${PTHREAD_LIBRARY})
     endif()
 endif()
