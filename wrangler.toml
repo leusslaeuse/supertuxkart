@@ -1,0 +1,9 @@
+name = "supertuxkart"
+compatibility_date = "2026-10-31"
+
+[build]
+command = "nix build .#packages.x86_64-linux.default"
+
+[assets]
+directory = "./result"
+not_found_handling = "404-page"
