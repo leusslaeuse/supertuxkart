@@ -27,7 +27,7 @@ nix build .#packages.x86_64-linux.default
 
 The `result` directory contains the game and textures. To deploy it to Cloudflare Workers Static Assets, authenticate with `npx wrangler@4 login`, then run `npx wrangler@4 deploy` from the repository root. Wrangler runs the Nix build before uploading. The configuration has no runtime Worker, R2 bucket, or paid service. Static asset requests and storage are free under Cloudflare's current pricing.
 
-The GitHub deployment workflow builds and deploys on pushes to `wasm` or a manual run. In the public GitHub copy, set the repository secrets `CLOUDFLARE_API_TOKEN` to an API token with Workers Scripts Edit permission and `CLOUDFLARE_ACCOUNT_ID` to your account ID. Push or mirror Forgejo's maintained `wasm` branch to that copy to deploy maintenance updates. The Forgejo workflow only maintains the fork; it does not deploy.
+The GitHub deployment workflow builds and deploys on pushes to `wasm` or a manual run. In the public GitHub copy, set the repository secrets `CLOUDFLARE_API_TOKEN` to an API token with Workers Scripts Edit permission and `CLOUDFLARE_ACCOUNT_ID` to your account ID. Push or mirror Forgejo's `wasm` branch to that copy to deploy updates. There is no scheduled Forgejo maintenance or automatic upstream merging.
 
 Build on a Nix machine or runner, not in the browser Worker runtime. GitHub Actions does the compilation, so this does not use Cloudflare's 3,000 build minutes or depend on Workers Builds' 20-minute timeout. Standard GitHub-hosted runners are free for public repositories under GitHub's current pricing.
 

@@ -26,8 +26,8 @@ On a fresh browser profile, the game denies the optional internet access used fo
 
 The fork builds a complete static website, including its own compiled game and High textures, with the declared Nix package. Wrangler deploys that output as Cloudflare Workers Static Assets with no runtime Worker script, server, paid storage, or websocket proxy. The cross-origin isolation headers required by the threaded game are served with the static files. Every uploaded file must fit Cloudflare's 25 MiB limit and the site must fit the free tier's 20,000-file limit. Verify the source build and deployment validation, and verify the browser startup from a static host. Full compilation is not assumed to fit Cloudflare Workers Builds' 20-minute limit; building on a Nix machine before upload is supported.
 
-## Separate maintenance and deployment workflows
+## GitHub deployment
 
-Forgejo runs the usual reusable weekly fork-maintenance workflow. A separate GitHub Actions workflow builds the complete static site with Nix and deploys it to Cloudflare when the wasm branch is pushed to the public GitHub copy, or when manually dispatched. Cloudflare credentials come from GitHub repository secrets, never committed files. Maintenance changes must be pushed or mirrored to the GitHub copy to trigger deployment. GitHub does the compilation; Cloudflare only serves static files.
+A GitHub Actions workflow builds the complete static site with Nix on ubuntu-latest and deploys it to Cloudflare when the wasm branch is pushed to the public GitHub copy, or when manually dispatched. Cloudflare credentials come from GitHub repository secrets, never committed files. Changes must be pushed or mirrored to the GitHub copy to trigger deployment. GitHub does the compilation; Cloudflare only serves static files. There is no scheduled Forgejo maintenance or automatic upstream merging.
 
 # Implemented by upstream

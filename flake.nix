@@ -114,7 +114,7 @@
             src = ./wasm/build_deps.sh;
             dontUnpack = true;
             dontConfigure = true;
-            nativeBuildInputs = tools;
+            nativeBuildInputs = tools ++ [ pkgs.ragel ];
             buildPhase = ''
               export HOME=$TMPDIR
               export EM_CACHE=$TMPDIR/em-cache
