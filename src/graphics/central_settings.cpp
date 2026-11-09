@@ -239,7 +239,10 @@ void CentralVideoSettings::init()
         if (m_glsl == true)
         {
             hasTextureStorage = true;
+#ifndef __EMSCRIPTEN__
+            // WebGL 2 omits GLES 3 texture swizzle parameters.
             hasTextureSwizzle = true;
+#endif
             hasSamplerObjects = true;
             hasVertexType2101010Rev = true;
             hasInstancedArrays = true;

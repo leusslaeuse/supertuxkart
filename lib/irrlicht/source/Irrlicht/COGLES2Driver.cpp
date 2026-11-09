@@ -507,7 +507,8 @@ namespace video
 			mask |= GL_DEPTH_BUFFER_BIT;
 		}
 
-		glClear(mask);
+		if (mask)
+			glClear(mask);
 		testGLError();
 		return true;
 	}
@@ -2415,7 +2416,16 @@ namespace video
 
 		// check if we should set the previous RT back
 
-		setActiveTexture(0, 0);
+		// Render targets must not remain bound to any sampler. Updating only
+		// CurrentTexture leaves the actual GL binding alive until the next draw.
+		for (u32 i = 0; i < MaxSupportedTextures; ++i)
+		{
+			if (i == 0 || (texture && CurrentTexture[i] == texture))
+			{
+				setActiveTexture(i, 0);
+				BridgeCalls->setTexture(i);
+			}
+		}
 		ResetRenderStates = true;
 		if (RenderTargetTexture != 0)
 		{
@@ -2453,7 +2463,8 @@ namespace video
 			mask |= GL_DEPTH_BUFFER_BIT;
 		}
 
-		glClear(mask);
+		if (mask)
+			glClear(mask);
 		testGLError();
 
 		return true;
@@ -2860,6 +2871,8 @@ namespace video
 
 				if(Driver->CurrentTexture[stage])
 					glBindTexture(GL_TEXTURE_2D, Driver->CurrentTexture[stage]->getTextureHandler());
+				else
+					glBindTexture(GL_TEXTURE_2D, 0);
 
 				Texture[stage] = Driver->CurrentTexture[stage];
 			}

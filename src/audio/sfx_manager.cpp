@@ -328,6 +328,11 @@ void SFXManager::stopThread()
         queue(SFX_EXIT);
         // Make sure the thread wakes up.
         m_condition_variable.notify_one();
+#ifdef __EMSCRIPTEN__
+        // There is no audio thread to consume the exit command after the
+        // browser's game loop has stopped.
+        mainLoop(this);
+#endif
     }
     else
 #endif
@@ -355,12 +360,18 @@ void SFXManager::mainLoop(void *obj)
 
     std::unique_lock<std::mutex> ul = me->m_sfx_commands.acquireMutex();
 
-#if defined(__SWITCH__) || defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
+    // Drain this frame's commands. A fixed 29-command cap cannot keep up with
+    // per-kart updates and leaves music streaming behind an ever-growing queue.
+    size_t remaining = me->m_sfx_commands.getData().size();
+#elif defined(__SWITCH__)
     int iterCount = 0;
 #endif
     // Wait till we have an empty sfx in the queue
     while (
-#if defined(__SWITCH__) || defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
+           remaining-- > 0 && !me->m_sfx_commands.getData().empty()
+#elif defined(__SWITCH__)
            // Don't spend too much time working on audio
            ++iterCount != 30 && !me->m_sfx_commands.getData().empty()
 #else
@@ -388,6 +399,9 @@ void SFXManager::mainLoop(void *obj)
         {
             delete current;
 #if defined(__SWITCH__) || defined(__EMSCRIPTEN__)
+#ifdef __EMSCRIPTEN__
+            me->setCanBeDeleted();
+#endif
             return;
 #else
             break;
@@ -479,6 +493,9 @@ void SFXManager::mainLoop(void *obj)
         PROFILER_POP_CPU_MARKER();
     }   // while
 
+#ifdef __EMSCRIPTEN__
+    return;
+#endif
     // Signal that the sfx manager can now be deleted.
     // We signal this even before cleaning up memory, since there is no
     // need to keep the user waiting for STK to exit.
@@ -1125,4 +1142,3 @@ SFXBase* SFXManager::quickSound(const std::string &sound_type)
     return NULL;
 #endif
 }   // quickSound
-

@@ -1849,6 +1849,10 @@ void initUserConfig()
     file_manager = new FileManager();
     user_config  = new UserConfig();     // needs file_manager
     user_config->loadConfig();
+#ifdef __EMSCRIPTEN__
+    // Unlock races for existing profiles too, without altering story progress.
+    UserConfigParams::m_unlock_everything = 2;
+#endif
     // Some parts of the file manager needs user config (paths for models
     // depend on artist debug flag). So init the rest of the file manager
     // after reading the user config file.
