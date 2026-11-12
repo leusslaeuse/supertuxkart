@@ -157,7 +157,6 @@ static void drawTexColoredQuad(const video::ITexture *texture,
     glBindVertexArray(0);
 
 
-    glGetError();
 }   // drawTexColoredQuad
 
 // ----------------------------------------------------------------------------
@@ -180,7 +179,6 @@ static void drawTexQuad(GLuint texture, float width, float height,
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glGetError();
 }   // drawTexQuad
 
 
@@ -292,7 +290,6 @@ void draw2DImage(const video::ITexture* texture,
         glDisable(GL_SCISSOR_TEST);
     glUseProgram(0);
 
-    glGetError();
 }   // draw2DImage
 
 // ----------------------------------------------------------------------------
@@ -392,7 +389,6 @@ void draw2DImage(const video::ITexture* texture,
         glDisable(GL_SCISSOR_TEST);
     glUseProgram(0);
 
-    glGetError();
 }   // draw2DImage
 
 // ----------------------------------------------------------------------------
@@ -574,7 +570,6 @@ void GL32_draw2DRectangle(video::SColor color, const core::rect<s32>& position,
         glDisable(GL_SCISSOR_TEST);
     glUseProgram(0);
 
-    glGetError();
 }   // GL32_draw2DRectangle
 
 void preloadShaders()
@@ -587,4 +582,3 @@ void preloadShaders()
 }   // preloadShaders
 
 #endif   // !SERVER_ONLY
-
