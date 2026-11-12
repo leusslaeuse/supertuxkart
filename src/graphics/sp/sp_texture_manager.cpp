@@ -97,6 +97,12 @@ SPTextureManager::~SPTextureManager()
 // ----------------------------------------------------------------------------
 void SPTextureManager::checkForGLCommand(bool before_scene)
 {
+#ifdef __EMSCRIPTEN__
+    // Workers proxy filesystem reads to the browser thread. Waiting here for
+    // their textures would prevent those requests from running. Render with
+    // the existing placeholder textures until later frames upload the data.
+    before_scene = false;
+#endif
     if (m_gl_cmd_function_count.load() == 0)
     {
         return;

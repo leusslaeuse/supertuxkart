@@ -32,11 +32,11 @@ A GitHub Actions workflow builds the complete static site with Nix on ubuntu-lat
 
 ## Browser shader rendering and steady frame times
 
-Browser builds request a GLES 3 compatible WebGL 2 context and use the shader-based renderer instead of unconditionally selecting the legacy renderer. The browser's capabilities must not be confused with desktop OpenGL capabilities, including texture swizzling, which WebGL 2 does not support. Fresh browser profiles default to forward rendering without expensive deferred dynamic lighting; saved graphics preferences remain adjustable. Keep the High texture download preset. Verify that startup selects the shader renderer, that kart selection previews and a race render correctly, and that browser console output contains no unsupported GL calls, framebuffer feedback loops, or zero-mask clear warnings. Texture render targets must be unbound from sampler units before rendering into them. Do not hide GL errors or swallow rendering exceptions as a performance fix.
+Browser builds request a GLES 3 compatible WebGL 2 context and use the shader-based renderer instead of unconditionally selecting the legacy renderer. The browser's capabilities must not be confused with desktop OpenGL capabilities, including texture swizzling, which WebGL 2 does not support. Uniform buffers declared by menu shaders must already have valid bindings before any race renders. Browser draw uploads copy CPU data and preserve GL command ordering, so they must not use the desktop's blocking GPU-fence wait for persistent mappings. Fresh browser profiles default to forward rendering without expensive deferred dynamic lighting; saved graphics preferences remain adjustable. Keep the High texture download preset. Verify that startup selects the shader renderer, that kart selection previews and a race render correctly, and that browser console output contains no unsupported GL calls, framebuffer feedback loops, function-signature traps, or zero-mask clear warnings. Texture render targets must be unbound from sampler units before rendering into them. Do not hide GL errors or swallow rendering exceptions as a performance fix.
 
 ## Bounded browser worker usage
 
-Browser builds prestart a finite pthread pool before the game starts, reserve enough workers for texture loading and existing background services, and fail thread creation on exhaustion rather than blocking the browser event loop waiting for another worker. Texture loading uses a small fixed worker count independent of the host's advertised processor count. Verify startup, repeated kart and track loading, and returning to the menu without exhausted-pool warnings or hangs. Preserve existing networking functionality.
+Browser builds prestart a finite pthread pool before the game starts, reserve enough workers for texture loading and existing background services, and fail thread creation on exhaustion rather than blocking the browser event loop waiting for another worker. Texture loading uses a small fixed worker count independent of the host's advertised processor count. Rendering must not spin waiting for worker-loaded textures, since workers proxy filesystem reads to the same browser thread. Use the existing placeholder textures until subsequent frames can upload the finished data. Verify startup, repeated kart and track loading, and returning to the menu without exhausted-pool warnings or hangs. Preserve existing networking functionality.
 
 ## Browser audio keeps up with gameplay
 
@@ -45,5 +45,9 @@ The browser audio command consumer handles the commands produced by a full race 
 ## All browser races unlocked
 
 New and existing browser profiles have all tracks, grand prix events, karts, and the final race available without earning story-mode points first. Use the game's existing unlock setting rather than fabricating completed challenges, trophies, or saved progress. Existing earned story progress must remain intact. Native builds retain upstream lock defaults. Verify that a fresh Pappnase profile and a previously saved locked profile can select previously locked tracks and grand prix events, including the final race.
+
+## Kart headlight asset compatibility
+
+The bundled kart assets can contain standalone point and spot light declarations alongside mesh headlights. The mesh headlight loader must not interpret those light-only declarations as empty mesh filenames and try to load the kart directory as a model. Real mesh headlights and older declarations without an explicit type still load normally. Verify startup with all bundled karts, including Adiumy, Godette, Emule, Konqi, and Sara, without directory-as-mesh loading errors. Do not remove karts or suppress actual missing-mesh errors.
 
 # Implemented by upstream

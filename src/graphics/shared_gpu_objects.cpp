@@ -142,6 +142,9 @@ void SharedGPUObjects::initShadowVPMUBO()
     glBindBuffer(GL_UNIFORM_BUFFER, m_View_projection_matrices_ubo);
     glBufferData(GL_UNIFORM_BUFFER, (16 * 9 + 2) * sizeof(float), 0,
                  GL_STREAM_DRAW);
+    // WebGL validates declared uniform blocks even in the 2D menu shaders.
+    // Bind them at creation, before the first scene render installs its data.
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_View_projection_matrices_ubo);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }   // initShadowVPMUBO
 
@@ -152,6 +155,7 @@ void SharedGPUObjects::initLightingDataUBO()
     glGenBuffers(1, &m_lighting_data_ubo);
     glBindBuffer(GL_UNIFORM_BUFFER, m_lighting_data_ubo);
     glBufferData(GL_UNIFORM_BUFFER, 36 * sizeof(float), 0, GL_STREAM_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_lighting_data_ubo);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }   // initLightingDataUBO
 
@@ -184,4 +188,3 @@ void SharedGPUObjects::reset()
 }   // reset
 
 #endif   // !SERVER_ONLY
-

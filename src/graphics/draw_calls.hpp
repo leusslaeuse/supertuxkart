@@ -64,7 +64,15 @@ public:
 
     void renderBoundingBoxes();
 
-    void setFenceSync() { m_sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0); }
+    void setFenceSync()
+    {
+#ifndef __EMSCRIPTEN__
+        // WebGL uploads copy CPU data and retain command ordering. They do not
+        // use persistent GPU mappings, and cannot wait on a fence without
+        // returning to the browser event loop.
+        m_sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+#endif
+    }
 };
 
 #endif   // !SERVER_ONLY

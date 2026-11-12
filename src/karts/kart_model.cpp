@@ -873,6 +873,12 @@ void KartModel::loadHeadlights(const XMLNode &node)
         const XMLNode* child = node.getNode(i);
         if (child->getName() == "object")
         {
+            // Newer assets also declare standalone lights here. This loader
+            // handles mesh headlights, not point or spot light definitions.
+            std::string type = "mesh";
+            child->get("type", &type);
+            if (type == "point" || type == "spot")
+                continue;
             core::vector3df position, rotation, scale;
             child->get("position", &position);
             child->get("rotation", &rotation);
