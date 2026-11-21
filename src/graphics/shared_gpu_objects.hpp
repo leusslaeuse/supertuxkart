@@ -44,6 +44,9 @@ private:
     static void initLightingDataUBO();
 
 public:
+    // The std140 Matrices block rounds its trailing vec2 up to 16 bytes.
+    static constexpr GLsizeiptr MATRICES_UBO_SIZE = (16 * 9 + 4) * sizeof(float);
+
     static void init();
     static void reset();
     // ------------------------------------------------------------------------

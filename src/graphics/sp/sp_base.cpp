@@ -462,8 +462,8 @@ void init()
         {
             glGenBuffers(1, &sp_mat_ubo[i][j]);
             glBindBuffer(GL_UNIFORM_BUFFER, sp_mat_ubo[i][j]);
-            glBufferData(GL_UNIFORM_BUFFER, (16 * 9 + 2) * sizeof(float), NULL,
-                GL_DYNAMIC_DRAW);
+            glBufferData(GL_UNIFORM_BUFFER, SharedGPUObjects::MATRICES_UBO_SIZE,
+                NULL, GL_DYNAMIC_DRAW);
         }
     }
 
