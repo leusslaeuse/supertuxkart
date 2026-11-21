@@ -264,6 +264,11 @@ void ShaderBasedRenderer::renderSceneDeferred(scene::ICameraSceneNode * const ca
         SP::draw(SP::RP_1ST, SP::DCT_NORMAL);
     }
 
+#ifdef __EMSCRIPTEN__
+    // WebGL shaders cannot sample depth while the same texture is attached.
+    m_rtts->copyDepthForSampling(FBO_SP);
+#endif
+
     // Handle SSAO
     {
         PROFILER_PUSH_CPU_MARKER("- SSAO", 0xFF, 0xFF, 0x00);

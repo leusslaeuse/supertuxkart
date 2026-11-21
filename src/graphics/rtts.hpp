@@ -58,6 +58,9 @@ enum TypeFBO
     FBO_BLOOM_128,
     FBO_TMP_128,
     FBO_LENS_128,
+#ifdef __EMSCRIPTEN__
+    FBO_DEPTH_COPY,
+#endif
     FBO_COUNT
 };
 
@@ -108,10 +111,18 @@ public:
     unsigned int getHeight() const { return m_height; }
 
     FrameBufferLayer* getShadowFrameBuffer() { return m_shadow_fbo; }
+#ifdef __EMSCRIPTEN__
+    void copyDepthForSampling(TypeFBO source);
+#endif
     unsigned getDepthStencilTexture() const
     {
+#ifdef __EMSCRIPTEN__
+        assert(m_depth_copy_tex != 0);
+        return m_depth_copy_tex;
+#else
         assert(m_depth_stencil_tex != 0);
         return m_depth_stencil_tex;
+#endif
     }
     unsigned getRenderTarget(enum TypeRTT target) const
     {
@@ -128,6 +139,9 @@ private:
     unsigned m_render_target_textures[RTT_COUNT] = {};
     FrameBuffer* m_frame_buffers[FBO_COUNT] = {};
     unsigned m_depth_stencil_tex = 0;
+#ifdef __EMSCRIPTEN__
+    unsigned m_depth_copy_tex = 0;
+#endif
 
     unsigned int m_width;
     unsigned int m_height;

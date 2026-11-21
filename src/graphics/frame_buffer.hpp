@@ -81,6 +81,14 @@ public:
         }
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
             GL_TEXTURE_2D, depth_stencil, 0);
+#ifdef __EMSCRIPTEN__
+        if (rtts.empty())
+        {
+            const GLenum no_color = GL_NONE;
+            glDrawBuffers(1, &no_color);
+            glReadBuffer(GL_NONE);
+        }
+#endif
         assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) ==
             GL_FRAMEBUFFER_COMPLETE_EXT);
     }

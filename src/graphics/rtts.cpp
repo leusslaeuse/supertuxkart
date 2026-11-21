@@ -117,6 +117,12 @@ RTT::RTT(unsigned int width, unsigned int height, float rtt_scale,
     }
     if (CVS->isDeferredEnabled())
     {
+#ifdef __EMSCRIPTEN__
+        m_depth_copy_tex = generateRTT(res, GL_DEPTH24_STENCIL8,
+            GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8);
+        m_frame_buffers[FBO_DEPTH_COPY] = new FrameBuffer({},
+            m_depth_copy_tex, res.Width, res.Height);
+#endif
         m_render_target_textures[RTT_NORMAL_AND_DEPTH] = generateRTT(res, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
         m_render_target_textures[RTT_SP_DIFF_COLOR] = generateRTT(res, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
         m_render_target_textures[RTT_RGBA_2] = generateRTT(res, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -321,11 +327,22 @@ RTT::~RTT()
         delete fb;
     }
     glDeleteTextures(1, &m_depth_stencil_tex);
+#ifdef __EMSCRIPTEN__
+    glDeleteTextures(1, &m_depth_copy_tex);
+#endif
     if (CVS->isShadowEnabled())
     {
         delete m_shadow_fbo;
         glDeleteTextures(1, &m_shadow_depth_tex);
     }
 }
+
+#ifdef __EMSCRIPTEN__
+void RTT::copyDepthForSampling(TypeFBO source)
+{
+    FrameBuffer::blit(getFBO(source), getFBO(FBO_DEPTH_COPY),
+        GL_DEPTH_BUFFER_BIT);
+}
+#endif
 
 #endif   // !SERVER_ONLY

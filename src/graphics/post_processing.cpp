@@ -1159,6 +1159,14 @@ FrameBuffer *PostProcessing::render(scene::ICameraSceneNode * const camnode,
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
 
+#ifdef __EMSCRIPTEN__
+    if (isRace && (UserConfigParams::m_dof || UserConfigParams::m_motionblur))
+    {
+        rtts->copyDepthForSampling(FBO_COLORS);
+        in_fbo->bind();
+    }
+#endif
+
     Physics *physics = Physics::get();
 
     if (isRace && UserConfigParams::m_dof && (physics == NULL || !physics->isDebug()))
